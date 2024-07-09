@@ -1,9 +1,17 @@
 import express, { Application, ErrorRequestHandler } from "express";
 import sendRes from "./App/utils/sendRes";
+import cors from "cors";
+import productRoutes from "./App/routes/product";
+
 const app: Application = express();
 const port = 3000;
 
-// 
+//parsers
+app.use(cors());
+app.use(express.json());
+
+// product route
+app.use("/api/products", productRoutes);
 
 app.get("/", (req, res) => {
   sendRes({
