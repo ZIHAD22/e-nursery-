@@ -1,7 +1,7 @@
 import express, { Application, ErrorRequestHandler } from "express";
 import sendRes from "./App/utils/sendRes";
 import cors from "cors";
-import productRoutes from "./App/routes/product";
+import productRoutes from "./App/routes/product.route";
 
 const app: Application = express();
 const port = 3000;
@@ -34,6 +34,7 @@ app.get("*", (req, res) => {
 });
 
 app.use(((err, req, res, next) => {
+  console.log(err);
   res.status(500).json({
     success: false,
     statusCode: 500,

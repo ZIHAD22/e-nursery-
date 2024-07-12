@@ -1,5 +1,5 @@
 import { model, Schema } from "mongoose";
-import TProduct from "../interface/product";
+import TProduct from "../interface/product.interface";
 
 const productSchema = new Schema<TProduct>({
   image: {
@@ -20,6 +20,6 @@ const productSchema = new Schema<TProduct>({
   },
 });
 
-const productModel = model<TProduct>("Product", productSchema);
+const ProductModel = model<TProduct>("Product", productSchema);
 
-export default productModel;
+export default ProductModel;

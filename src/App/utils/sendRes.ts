@@ -8,8 +8,13 @@ type TSendRes<T> = {
   data: T;
 };
 
+function capitalizeFirstLetter(payload: string) {
+  return payload.charAt(0).toUpperCase() + payload.slice(1);
+}
+
 const sendRes = <T>(payload: TSendRes<T>) => {
-  const { res, success, statusCode, message, data } = payload;
+  const { res, success, statusCode, data } = payload;
+  let message = capitalizeFirstLetter(payload.message);
   return res.status(statusCode).json({
     success,
     statusCode,
