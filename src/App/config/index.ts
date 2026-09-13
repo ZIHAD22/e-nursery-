@@ -17,6 +17,8 @@ const email_sender_smtp_user = process.env.EMAIL_SENDER_SMTP_USER;
 const email_sender_smtp_pass = process.env.EMAIL_SENDER_SMTP_PASS;
 const email_sender_smtp_from = process.env.EMAIL_SENDER_SMTP_FROM;
 const otp_secret = process.env.OTP_SECRET;
+const passwordVerificationTokenSecret =
+  process.env.PASSWORD_VERIFICATION_TOKEN_SECRET;
 
 export default {
   PORT,
@@ -34,4 +36,5 @@ export default {
   email_sender_smtp_pass,
   email_sender_smtp_user,
   otp_secret,
+  passwordVerificationTokenSecret,
 };

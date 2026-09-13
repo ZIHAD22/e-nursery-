@@ -5,6 +5,7 @@ import AppError from "../../errors/AppError.js";
 import { emailService } from "../email/email.service.js";
 import hashOtp from "../../utils/hashOtp.js";
 import { OtpPurpose } from "../../../generated/prisma/enums.js";
+import { JwtPayload } from "jsonwebtoken";
 
 const registerUser = async (payload: {
   name: string;
@@ -166,10 +167,26 @@ const reSendOtp = async (payload: { email: string; purpose: OtpPurpose }) => {
   );
 };
 
+const sendResetPasswordOtp = async (email: string) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      email,
+    },
+  });
+
+  const sendEmail = await emailService.sendVerificationOtpEmail(
+    user?.email as string,
+    user?.name as string,
+    "RESET_PASSWORD",
+    "otp.email",
+  );
+};
+
 const resetPassword = async (
   userId: string,
   oldPassword: string,
   newPassword: string,
+  verificationToken: JwtPayload,
 ) => {
   const user = await prisma.user.findUnique({
     where: {
@@ -178,6 +195,7 @@ const resetPassword = async (
     select: {
       id: true,
       password: true,
+      email: true,
     },
   });
 
@@ -211,4 +229,5 @@ export const authService = {
   otpVerification,
   reSendOtp,
   resetPassword,
+  sendResetPasswordOtp,
 };

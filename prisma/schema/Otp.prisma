@@ -1,7 +1,7 @@
 enum OtpPurpose {
     SIGN_UP
     LOGIN
-    CHANGE_PASSWORD
+    RESET_PASSWORD
     FORGOT_PASSWORD
 }
 

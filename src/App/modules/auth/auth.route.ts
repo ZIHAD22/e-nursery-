@@ -4,6 +4,7 @@ import { authController } from "./auth.controller.js";
 import validateRequest from "../../middleware/validateRequest.js";
 import auth from "../../middleware/auth.js";
 import { Role } from "../../../type/index.js";
+import verifyPasswordActionToken from "../../middleware/verifyPasswordActionToken.js";
 
 const authRoute = Router();
 
@@ -23,9 +24,16 @@ authRoute.post(
   authController.userLogin,
 );
 
+authRoute.post(
+  "/me/password/request-otp",
+  auth(Role.CUSTOMER, Role.ADMIN),
+  authController.sendResetPasswordOtp,
+);
+
 authRoute.patch(
   "/me/password",
   auth(Role.CUSTOMER, Role.ADMIN),
+  verifyPasswordActionToken,
   authController.resetPassword,
 );
 

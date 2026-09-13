@@ -5,6 +5,7 @@ import { authService } from "./auth.service.js";
 import sendRes from "../../utils/sendRes.js";
 import config from "../../config/index.js";
 import AppError from "../../errors/AppError.js";
+import { JwtPayload } from "jsonwebtoken";
 
 const userRegistration = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -94,20 +95,38 @@ const reSendOtp = catchAsync(
   },
 );
 
+const sendResetPasswordOtp = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await authService.sendResetPasswordOtp(req.user?.email);
+
+    sendRes({
+      res,
+      success: true,
+      statusCode: 200,
+      message:
+        "A verification OTP has been sent to your email. Please check your inbox",
+      data: result,
+    });
+  },
+);
+
 const resetPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const result = await authService.resetPassword(
-      req.user?.id,
-      req.body.oldPassword,
-      req.body.newPassword,
-    );
+    console.log(req.passwordVerification);
+
+    // const result = await authService.resetPassword(
+    //   req.user?.id,
+    //   req.body.oldPassword,
+    //   req.body.newPassword,
+    //   req.passwordVerification as JwtPayload,
+    // );
 
     sendRes({
       res,
       success: true,
       message: "Password changed successfully",
       statusCode: 200,
-      data: result,
+      data: {},
     });
   },
 );
@@ -118,4 +137,5 @@ export const authController = {
   otpVerification,
   reSendOtp,
   resetPassword,
+  sendResetPasswordOtp,
 };

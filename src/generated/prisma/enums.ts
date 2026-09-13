@@ -59,7 +59,7 @@ export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod]
 export const OtpPurpose = {
   SIGN_UP: 'SIGN_UP',
   LOGIN: 'LOGIN',
-  CHANGE_PASSWORD: 'CHANGE_PASSWORD',
+  RESET_PASSWORD: 'RESET_PASSWORD',
   FORGOT_PASSWORD: 'FORGOT_PASSWORD'
 } as const
 
