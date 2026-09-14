@@ -6,6 +6,7 @@ const PORT = process.env.PORT;
 const DB_URL = process.env.DB_URL_DEV as string;
 const nodeEnv = process.env.NODE_ENV as string;
 const secret = process.env.SECRET as string;
+const bcryptSaltRounds = process.env.BCRYPT_SALT_ROUNDS;
 const base_url = process.env.BASE_URL as string;
 const store_name = process.env.STORE_NAME as string;
 const store_id = process.env.STORE_ID as string;
@@ -24,6 +25,7 @@ export default {
   PORT,
   DB_URL,
   nodeEnv,
+  bcryptSaltRounds,
   secret,
   base_url,
   store_name,

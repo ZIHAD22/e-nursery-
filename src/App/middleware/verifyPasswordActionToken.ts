@@ -28,8 +28,13 @@ const verifyPasswordActionToken = (
       config.passwordVerificationTokenSecret as string,
     );
 
+    console.log(verifyToken);
+
     // Make sure this token is for password changing
-    if (verifyToken?.purpose !== OtpPurpose.RESET_PASSWORD) {
+    if (
+      verifyToken?.purpose !== OtpPurpose.RESET_PASSWORD &&
+      verifyToken?.purpose !== OtpPurpose.FORGOT_PASSWORD
+    ) {
       throw new AppError(
         403,
         "This verification token cannot be used to change your password.",

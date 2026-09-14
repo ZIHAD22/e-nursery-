@@ -62,7 +62,11 @@ const otpVerification = catchAsync(
       req.body.purpose,
     );
 
-    if (result && req.body.purpose === OtpPurpose.RESET_PASSWORD) {
+    if (
+      result &&
+      (req.body.purpose === OtpPurpose.RESET_PASSWORD ||
+        req.body.purpose === OtpPurpose.FORGOT_PASSWORD)
+    ) {
       const token = tokenHelper.createAccessToken(
         {
           id: result.id,
@@ -154,6 +158,47 @@ const resetPassword = catchAsync(
   },
 );
 
+const sendForgotPasswordOtp = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    console.log(req.body);
+
+    await authService.sendForgotPasswordOtp(req.body.email);
+
+    sendRes({
+      res,
+      success: true,
+      message:
+        "A verification OTP has been sent to your email. Please check your inbox",
+      statusCode: 200,
+      data: {},
+    });
+  },
+);
+
+const forgetPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.passwordVerification) {
+      throw new AppError(
+        401,
+        "Please verify the OTP before changing your password.",
+      );
+    }
+    const result = await authService.forgetPassword(
+      req.body.password,
+      req.body.confirmPassword,
+      req.passwordVerification.id,
+    );
+
+    sendRes({
+      res,
+      success: true,
+      message: "Password changed successfully",
+      statusCode: 200,
+      data: {},
+    });
+  },
+);
+
 export const authController = {
   userRegistration,
   userLogin,
@@ -161,4 +206,6 @@ export const authController = {
   reSendOtp,
   resetPassword,
   sendResetPasswordOtp,
+  sendForgotPasswordOtp,
+  forgetPassword,
 };

@@ -14,20 +14,10 @@ authRoute.post(
   authController.userRegistration,
 );
 
-authRoute.post("/verify-otp", authController.otpVerification);
-
-authRoute.post("/resend-otp", authController.reSendOtp);
-
 authRoute.post(
   "/login",
   validateRequest(authValidation.loginUserSchema),
   authController.userLogin,
-);
-
-authRoute.post(
-  "/me/password/request-otp",
-  auth(Role.CUSTOMER, Role.ADMIN),
-  authController.sendResetPasswordOtp,
 );
 
 authRoute.patch(
@@ -35,6 +25,27 @@ authRoute.patch(
   auth(Role.CUSTOMER, Role.ADMIN),
   verifyPasswordActionToken,
   authController.resetPassword,
+);
+
+authRoute.patch(
+  "/forgot-password",
+  verifyPasswordActionToken,
+  authController.forgetPassword,
+);
+
+authRoute.post("/verify-otp", authController.otpVerification);
+
+authRoute.post("/resend-otp", authController.reSendOtp);
+
+authRoute.post(
+  "/me/password/request-otp",
+  auth(Role.CUSTOMER, Role.ADMIN),
+  authController.sendResetPasswordOtp,
+);
+
+authRoute.post(
+  "/forgot-password/send-otp",
+  authController.sendForgotPasswordOtp,
 );
 
 export default authRoute;

@@ -7,13 +7,17 @@ import hashOtp from "../../utils/hashOtp.js";
 import { OtpPurpose } from "../../../generated/prisma/enums.js";
 import { JwtPayload } from "jsonwebtoken";
 import { tokenHelper } from "../../utils/tokenHelper.js";
+import config from "../../config/index.js";
 
 const registerUser = async (payload: {
   name: string;
   email: string;
   password: string;
 }) => {
-  const hashPass = await bcrypt.hash(payload.password, 10);
+  const hashPass = await bcrypt.hash(
+    payload.password,
+    Number(config.bcryptSaltRounds),
+  );
   const data = await prisma.user.create({
     data: {
       name: payload.name,
@@ -139,6 +143,12 @@ const otpVerification = async (
         email,
       },
     });
+  } else if (purpose === OtpPurpose.FORGOT_PASSWORD) {
+    result = await prisma.user.findFirst({
+      where: {
+        email,
+      },
+    });
   }
 
   // Delete OTP after successful verification
@@ -235,6 +245,71 @@ const resetPassword = async (
   return null;
 };
 
+const sendForgotPasswordOtp = async (email: string) => {
+  const user = await prisma.user.findFirst({
+    where: {
+      email,
+    },
+  });
+
+  const sendEmail = await emailService.sendVerificationOtpEmail(
+    user?.email as string,
+    user?.name as string,
+    "FORGOT_PASSWORD",
+    "otp.email",
+  );
+};
+
+const forgetPassword = async (
+  password: string,
+  confirmPassword: string,
+  userId: string,
+) => {
+  // Check password confirmation
+  if (password !== confirmPassword) {
+    throw new AppError(400, "Password and confirm password do not match.");
+  }
+
+  // Find user
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+
+  if (!user) {
+    throw new AppError(404, "User not found.");
+  }
+
+  // Optional: prevent using same password
+  const isSamePassword = await bcrypt.compare(password, user.password);
+
+  if (isSamePassword) {
+    throw new AppError(
+      400,
+      "New password cannot be the same as your current password.",
+    );
+  }
+
+  // Hash new password
+  const hashedPassword = await bcrypt.hash(
+    password,
+    Number(config.bcryptSaltRounds),
+  );
+
+  // Update password
+  await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      password: hashedPassword,
+    },
+  });
+
+  return null;
+};
+
 export const authService = {
   registerUser,
   loginUser,
@@ -242,4 +317,6 @@ export const authService = {
   reSendOtp,
   resetPassword,
   sendResetPasswordOtp,
+  sendForgotPasswordOtp,
+  forgetPassword,
 };
