@@ -6,6 +6,7 @@ import sendRes from "../../utils/sendRes.js";
 import config from "../../config/index.js";
 import AppError from "../../errors/AppError.js";
 import { JwtPayload } from "jsonwebtoken";
+import { OtpPurpose } from "../../../generated/prisma/enums.js";
 
 const userRegistration = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -55,11 +56,31 @@ const userLogin = catchAsync(
 
 const otpVerification = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    await authService.otpVerification(
+    const result = await authService.otpVerification(
       req.body.email,
       req.body.otp,
       req.body.purpose,
     );
+
+    if (result && req.body.purpose === OtpPurpose.RESET_PASSWORD) {
+      const token = tokenHelper.createAccessToken(
+        {
+          id: result.id,
+          email: result.email,
+          role: result.role,
+          purpose: req.body.purpose,
+        },
+        config.secret,
+        "10m",
+      );
+
+      res.cookie("verificationToken", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 10 * 60 * 1000,
+      });
+    }
 
     sendRes({
       res,
@@ -113,13 +134,15 @@ const sendResetPasswordOtp = catchAsync(
 const resetPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     console.log(req.passwordVerification);
+    console.log(req.body);
 
-    // const result = await authService.resetPassword(
-    //   req.user?.id,
-    //   req.body.oldPassword,
-    //   req.body.newPassword,
-    //   req.passwordVerification as JwtPayload,
-    // );
+    const result = await authService.resetPassword(
+      req.user?.id,
+      req.body.oldPassword,
+      req.body.newPassword,
+    );
+
+    res.clearCookie("verificationToken");
 
     sendRes({
       res,

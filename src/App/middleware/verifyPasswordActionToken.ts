@@ -3,6 +3,7 @@ import AppError from "../errors/AppError.js";
 import { tokenHelper } from "../utils/tokenHelper.js";
 import config from "../config/index.js";
 import jwt from "jsonwebtoken";
+import { OtpPurpose } from "../../generated/prisma/enums.js";
 
 const verifyPasswordActionToken = (
   req: Request,
@@ -28,7 +29,7 @@ const verifyPasswordActionToken = (
     );
 
     // Make sure this token is for password changing
-    if (verifyToken?.purpose !== "CHANGE_PASSWORD") {
+    if (verifyToken?.purpose !== OtpPurpose.RESET_PASSWORD) {
       throw new AppError(
         403,
         "This verification token cannot be used to change your password.",

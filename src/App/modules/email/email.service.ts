@@ -5,6 +5,7 @@ import ejs from "ejs";
 import emailTransporter from "../../config/email.config.js";
 import generateOtp from "../../utils/generateOtp.js";
 import hashOtp from "../../utils/hashOtp.js";
+import { getTitle } from "./email.utils.js";
 
 const sendVerificationOtpEmail = async (
   email: string,
@@ -12,13 +13,14 @@ const sendVerificationOtpEmail = async (
   type: OtpPurpose,
   template: string,
 ) => {
+  console.log(type);
   const otp = generateOtp();
   const codeHash = hashOtp(otp);
 
   await prisma.otp.deleteMany({
     where: {
       email,
-      purpose: OtpPurpose.SIGN_UP,
+      purpose: type,
     },
   });
 
@@ -49,7 +51,7 @@ const sendVerificationOtpEmail = async (
   // Send email
   return await emailTransporter.sendMail({
     to: email,
-    subject: "Verify Your Email - e-nursery 🌱",
+    subject: getTitle(type).subject,
     html,
   });
 };

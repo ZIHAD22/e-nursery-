@@ -6,6 +6,7 @@ import { emailService } from "../email/email.service.js";
 import hashOtp from "../../utils/hashOtp.js";
 import { OtpPurpose } from "../../../generated/prisma/enums.js";
 import { JwtPayload } from "jsonwebtoken";
+import { tokenHelper } from "../../utils/tokenHelper.js";
 
 const registerUser = async (payload: {
   name: string;
@@ -111,24 +112,34 @@ const otpVerification = async (
     throw new Error("Invalid OTP.");
   }
 
-  // Update user verification status
-  await prisma.user.update({
-    where: {
-      email,
-    },
-    data: {
-      isVerified: true,
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      avatar: true,
-      isVerified: true,
-      createdAt: true,
-    },
-  });
+  let result;
+
+  if (purpose === OtpPurpose.SIGN_UP) {
+    // Update user verification status
+    await prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        isVerified: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        avatar: true,
+        isVerified: true,
+        createdAt: true,
+      },
+    });
+  } else if (purpose === OtpPurpose.RESET_PASSWORD) {
+    result = await prisma.user.findFirst({
+      where: {
+        email,
+      },
+    });
+  }
 
   // Delete OTP after successful verification
   await prisma.otp.delete({
@@ -136,6 +147,8 @@ const otpVerification = async (
       id: otpRecord.id,
     },
   });
+
+  return result;
 };
 
 const reSendOtp = async (payload: { email: string; purpose: OtpPurpose }) => {
@@ -186,7 +199,6 @@ const resetPassword = async (
   userId: string,
   oldPassword: string,
   newPassword: string,
-  verificationToken: JwtPayload,
 ) => {
   const user = await prisma.user.findUnique({
     where: {
